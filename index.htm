@@ -1,12 +1,33 @@
 <!DOCTYPE html>
 <html>
 	<title>My Title </title>
+	
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="x-UA-Compatible" content="ie=edge">
+	</head>	
 	<body>
+		<!-- <form id="frm1" action = "./custom-css-js/getResult.php" method="post"> -->
+		<form action=""id="form1">
+			<!--輸入股號:<input type="text" name="fname" required><br>-->
+			輸入股號:<input type ="text" value="2317" name ="input_Value">
+		</form>
+		<br>
+		<input type ="button" value = "顯示資料" id = "ori_chart">
+
+		<!-- <input type="button" value="更新另一組資料" id="update_chart"> -->
+                <div id="myKLinePic" style="height: 400px; min-width: 310px"></div>
+	        <div id="container" style="height: 400px; min-width: 310px"></div>
+                <div id="monthPic" style="height: 400px; min-width: 310px"></div>
 		
-		<?php> 
-		echo "My first PHP script!";
-		phpinfo();
-		<?>
+		<script src="https://code.highcharts.com/stock/highstock.js"></script>
+		<script src="https://code.highcharts.com/stock/modules/data.js"></script>
+		<script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+	        <script type="text/javascript" src="./custom-css-js/js/main_1.js"></script>
+	        <script type="text/javascript" src="./custom-css-js/js/updateMonth.js"></script>
+	        <script type="text/javascript" src="./custom-css-js/js/updateRevenue.js"></script>
+
 	</body>
 </html>
 
