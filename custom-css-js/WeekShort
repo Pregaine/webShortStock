@@ -1,0 +1,144 @@
+<?php
+
+	$servername = "localhost";
+	$username = "root";
+	$password = "RF69xy7C";
+	$dbname = "mysql";
+
+	/* echo "<form id='formid' action='<?php echo $_SERVER['PHP_SELF']; ?>' method='POST'>"; */
+	echo "<form id='formid' method='POST'>";
+	echo "Close  > <input type='text' name='closePrice' value='50' /><BR><BR>";
+	echo "Volume > <input type='text' name='volume' value='2000' /><BR><BR>";
+	echo "K3_2   > <input type='text' name='k3_2'  value='85' /><BR><BR>";
+	echo "RSI2   > <input type='text' name='rsi2' value='85' /><BR><BR>";
+	echo "MFI4   > <input type='text' name='mfi4' value='95' /><BR><BR>";
+    echo "股本   > <input type='text' name='capital' value='10' />  ";
+	echo "<input type='submit' name='submit' value='submit' />";
+	echo "</form>";
+
+	if( !empty( $_POST[ 'submit' ] ) ) {
+    // we will add the code to process submitted form here
+    // we can also echo some text here if form is submitted
+    // echo $_POST[ 'inputname' ];
+
+    echo "<table style='border:1px;text-align:center;line-height:40px;'>";
+    echo "<tr>
+              <th style='text-align:center;' >股號</th>
+              <th style='text-align:center;' >日期</th>
+              <th style='text-align:center;' >收盤</th>
+	          <th style='text-align:center;' >現價</th>
+			  <th style='text-align:center;' >KD</th>
+			  <th style='text-align:center;' >RSI2</th>
+			  <th style='text-align:center;' >MFI4</th>
+              <th style='text-align:center;' >現價差</th>
+              <th style='text-align:center;' >漲幅%</th>
+          </tr>";
+
+    /*
+	class TableRows extends RecursiveIteratorIterator {
+
+        function __construct($it) {
+            parent::__construct($it, self::LEAVES_ONLY);
+        }
+
+        function current() {
+            return "<td style='border-top-style:solid;
+                        border-bottom-style:solid;
+                        border-right-style:solid;
+                        border-left-style:solid;
+                        border: solid 1px black;
+                        text-align:center;
+                        line-height:30px;
+                        font-size:15px'>" . parent::current(). "</td>";
+        }
+
+        function beginChildren() {
+            echo "<tr>";
+        }
+
+        function endChildren() {
+            echo "</tr>" . "\n";
+        }
+    }
+	*/
+
+    $conn = new PDO( "mysql:host=$servername;dbname=$dbname", $username, $password );
+    $conn->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+		
+	$queryCmdTest = "SELECT A.stock, DATE_FORMAT( A.date, '%y/%m/%d' ) as date, Round( A.close_price, 1 ) as buy_price, Round( B.close_price, 1 ) as now_price, " . 
+	                "A.k3_2, " . 
+					"A.rsi2, " .
+					"A.mfi4, " .
+					"( B.close_price - A.close_price ) as diff_price, " .
+					"round( ( B.close_price - A.close_price ) / A.close_price * 100, 1 ) as gain FROM TECH_W as A " .
+					// "SELECT * FROM TECH_W as A " .
+					"LEFT JOIN " . 
+					"( SELECT stock, close_price FROM TECH_W WHERE Date IN ( SELECT Max( date ) FROM TECH_W WHERE Stock = '2317' ) ) as B " .
+					"ON A.stock = B.stock " .
+					"WHERE date > '2018-10-01' AND " . 
+					"A.close_price > " . $_POST[ 'closePrice' ] . " AND " .
+                    "volume > " . $_POST[ 'volume' ] . " AND " .
+                    "k3_2 > " . $_POST[ 'k3_2' ] . " AND " .
+                    "rsi2 > " . $_POST[ 'rsi2' ] . " AND " .
+                    "mfi4 > " . $_POST[ 'mfi4' ] .
+					" ORDER BY date DESC LIMIT 200;";
+	
+
+    // echo $queryCmdTest;
+
+    $stmt = $conn->prepare( $queryCmdTest );
+
+    $stmt->execute( );
+
+    // set the resulting array to associative
+    // $result = $stmt->setFetchMode(PDO::FETCH_ASSOC);
+	
+	// set the resulting array to associative
+    // PDO::FETCH_ASSOC 返回以欄位名稱作為索引鍵(key)的陣列(array)
+	$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // foreach( new TableRows( new RecursiveArrayIterator( $stmt->fetchAll( ) ) ) as $k=>$v ) {
+    //     echo $v;
+    // }
+		$div = "<div style='border-color:#969696;border-style:solid;border-width:2px 2px 1px 1px;padding:2px;'>";
+	
+	
+		foreach( $result as $row )
+		{	
+			// echo $row[ 'now_price' ];
+		
+			echo '<tr>';
+			
+			echo "<td border: solid 1px black; text-align:center; >" . $div . $row[ 'stock' ]     . "</div>" . "</td>";
+			echo "<td border: solid 1px black; text-align:center; >" . $div . $row[ 'date' ]      . "</div>" . "</td>";
+			echo "<td border: solid 1px black; text-align:center; >" . $div . $row[ 'buy_price' ] . "</div>" . "</td>";
+			echo "<td border: solid 1px black; text-align:center; >" . $div . $row[ 'now_price' ] . "</div>" . "</td>";
+			echo "<td border: solid 1px black; text-align:center; >" . $div . $row[ 'k3_2' ]      . "</div>" . "</td>";
+			echo "<td border: solid 1px black; text-align:center; >" . $div . $row[ 'rsi2' ]      . "</div>" . "</td>";
+			echo "<td border: solid 1px black; text-align:center; >" . $div . $row[ 'mfi4' ]      . "</div>" . "</td>";
+			echo "<td border: solid 1px black; text-align:center; >" . $div . $row[ 'diff_price' ]. "</div>" . "</td>";
+			
+			if ( $row[ 'gain' ] < 0 ) {
+			
+				echo "<td border: solid 1px black; text-align:center; ><font color='red'>". $div    . $row[ 'gain' ]. "</div>" . "</font></td>";
+			}
+			else {
+			
+				echo "<td border: solid 1px black; text-align:center; ><font color='black'>" . $div . $row[ 'gain' ]. "</div>" . "</font></td>";
+			
+			}
+			
+			echo "</tr>";
+		}
+		
+		echo "</table>";
+	
+	
+
+	}
+	else {
+
+	}
+  
+	$conn = null;
+?>

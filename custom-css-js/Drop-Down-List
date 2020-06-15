@@ -1,0 +1,122 @@
+<?php
+
+$servername = "localhost";
+$username = "root";
+$password = "RF69xy7C";
+$dbname = "mysql";
+
+try {
+    
+    $conn = new PDO( "mysql:host=$servername;dbname=$dbname", $username, $password);
+    $conn->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+    
+    $queryCmdTest = "SELECT DATE_FORMAT( meetDate, '%y/%m/%d' ) AS StrDate FROM StockSelection 
+                     GROUP BY meetDate DESC;";
+    
+    $stmt = $conn->prepare( $queryCmdTest ); 
+    
+    $stmt->execute();
+
+    $data = $stmt->fetchAll();
+    
+    print "<form method= 'post' >";
+    
+    print "<select name = '符合日'>";
+    
+    foreach ( $data as $row ) {
+                
+        print '<option value="'.$row['StrDate'].'">'.$row['StrDate'].'</option>';
+        
+    }
+    
+    print '</select>';
+    
+    print '<BR><BR>';
+    
+    print "<input type='submit' value='送出查詢'/>";
+    
+    print "</form>";
+    
+    // print $_POST['符合日'];
+    
+    if( !empty( $_POST[ '符合日' ] ) ) {
+        
+        echo "<table style='border:1px;text-align:center;line-height:40px;'>";
+        echo "<tr><th style='text-align:center;'>股名</th>
+          <th style='text-align:center;' >股號</th>
+          <th style='text-align:center;' >符合日</th>
+          <th style='text-align:center;' >股本(億)</th>
+          <th style='text-align:center;' >收盤</th>
+          <th style='text-align:center;' >籌碼收盤</th>
+          <th style='text-align:center;' >籌碼集中</th>
+          <th style='text-align:center;' >籌碼日</th>
+          <th style='text-align:center;' >布寬</th>
+          <th style='text-align:center;' >外資</th>
+          <th style='text-align:center;' >投信</th>
+          <th style='text-align:center;' >自營商</th>
+          <th style='text-align:center;' >股東減</th>
+          <th style='text-align:center;' >大戶增</th>
+          <th style='text-align:center;' >散戶減</th>
+          </tr>";
+          
+          
+        class TableRows extends RecursiveIteratorIterator { 
+            
+            function __construct($it) { 
+                parent::__construct($it, self::LEAVES_ONLY); 
+            }
+
+            function current() {
+                return "<td style='border-top-style:solid;
+                            border-bottom-style:solid;
+                            border-right-style:solid;
+                            border-left-style:solid;
+                            border: solid 1px black;
+                            text-align:center;
+                            line-height:30px;
+                            font-size:15px'>" . parent::current(). "</td>";        
+            } 
+
+            function beginChildren() { 
+                echo "<tr>"; 
+            } 
+
+            function endChildren() { 
+                echo "</tr>" . "\n";
+            } 
+        } 
+        
+        $queryCmdTest = 
+        "SELECT stock, stockNum, DATE_FORMAT( meetDate, '%y/%m/%d' ), 
+         capital, price, 
+         centraClosePrice, centraValue, DATE_FORMAT( centraDate, '%y/%m/%d' ), 
+         bbands, foreignBuyDate, investmentBuyDate, dealerBuyDate, 
+         peopleRationDecrease, Ratio400Up, Ratio100Down FROM StockSelection
+         WHERE meetDate = '" . $_POST[ '符合日' ] . "' ORDER BY Ratio400Up DESC;";
+    
+        // echo $queryCmdTest;
+    
+        $stmt = $conn->prepare( $queryCmdTest ); 
+
+        $stmt->execute( );
+
+        // set the resulting array to associative
+        $result = $stmt->setFetchMode(PDO::FETCH_ASSOC); 
+
+        foreach( new TableRows( new RecursiveArrayIterator( $stmt->fetchAll( ) ) ) as $k=>$v ) {
+            echo $v;
+        }
+
+        echo "</table>";  
+    }
+    
+    
+    $conn = null;
+   
+}
+
+catch(PDOException $e) {
+    echo "Error: " . $e->getMessage();
+}
+
+?>

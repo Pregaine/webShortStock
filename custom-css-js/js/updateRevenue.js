@@ -268,7 +268,7 @@ function getAjaxDataRevenue() {
         }
     }
 
-    xhr.open( 'POST', '../callPython.php', true );
+    xhr.open( 'POST', '/custom-css-js/callPython.php', true );
     xhr.send( formData );
 }
 

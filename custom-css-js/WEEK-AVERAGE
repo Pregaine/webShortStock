@@ -1,0 +1,103 @@
+<?php
+
+	$servername = "localhost";
+	$username = "root";
+	$password = "RF69xy7C";
+	$dbname = "mysql";
+
+	$conn = new PDO( "mysql:host=$servername;dbname=$dbname", $username, $password);
+    $conn->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+    
+    $queryCmdTest = "SELECT stock FROM TECH_W GROUP BY stock ASC;";
+    
+    $stmt = $conn->prepare( $queryCmdTest ); 
+    
+    $stmt->execute();
+
+    $list = $stmt->fetchAll();
+    
+    print "<form method= 'post' >";
+    
+    print "<select name = '股號'>";
+    
+    foreach ( $list as $row ) {
+                
+        print '<option value="'.$row['stock'].'">'.$row['stock'].'</option>';
+        
+    }
+    
+    print '</select>  ';
+    
+    print "<input type='submit' value='送出查詢'/>";
+    
+    print "</form>";
+
+	if( !empty( $_POST[ '股號' ] ) ) {
+    // we will add the code to process submitted form here
+    // we can also echo some text here if form is submitted
+    // echo $_POST[ 'inputname' ];
+	
+    echo "<table style='border:1px;text-align:center;line-height:40px;'>";
+    echo "<tr>
+              <th style='text-align:center;' >股號</th>              
+			  <th style='text-align:center;' >日期</th>
+              <th style='text-align:center;' >收盤</th>
+			  <th style='text-align:center;' >成交量</th>
+			  <th style='text-align:center;' >MFI4</th>
+              <th style='text-align:center;' >K3_2</th>
+              <th style='text-align:center;' >D3_3</th>
+			  <th style='text-align:center;' >RSI2</th>
+          </tr>";
+	
+	$queryCmdTest = "SELECT stock, DATE_FORMAT( date, '%y/%m/%d' ) as date, Round( close_price, 1 ) as price, " . 
+					"volume, mfi4, k3_2, d3_3, rsi2 FROM TECH_W WHERE stock = " . $_POST[ '股號' ] . 
+					" ORDER BY date DESC LIMIT 10;";
+					
+	
+    // echo $queryCmdTest;
+
+    $stmt = $conn->prepare( $queryCmdTest );
+
+    $stmt->execute( );
+
+    // set the resulting array to associative
+    // PDO::FETCH_ASSOC 返回以欄位名稱作為索引鍵(key)的陣列(array)
+	$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+	
+	$div = "<div style='border-color:#969696;border-style:solid;border-width:2px 2px 1px 1px;padding:2px;'>";
+	
+	foreach( $result as $row )
+	{	
+		echo '<tr>';
+		
+		echo "<td border: solid 1px black; text-align:center; >" . $div . $row[ 'stock' ]  . "</div>" . "</td>";
+		echo "<td border: solid 1px black; text-align:center; >" . $div . $row[ 'date' ]   . "</div>" . "</td>";
+		echo "<td border: solid 1px black; text-align:center; >" . $div . $row[ 'price' ]  . "</div>" . "</td>";
+		echo "<td border: solid 1px black; text-align:center; >" . $div . $row[ 'volume' ] . "</div>" . "</td>";
+		echo "<td border: solid 1px black; text-align:center; >" . $div . $row[ 'mfi4' ]   . "</div>" . "</td>";
+		echo "<td border: solid 1px black; text-align:center; >" . $div . $row[ 'k3_2' ]   . "</div>" . "</td>";
+		echo "<td border: solid 1px black; text-align:center; >" . $div . $row[ 'd3_3' ]   . "</div>" . "</td>";
+		echo "<td border: solid 1px black; text-align:center; >" . $div . $row[ 'rsi2' ]   . "</div>" . "</td>";
+		/*
+		if ( $row[ 'gain' ] > 0 ) {
+			
+			echo "<td border: solid 1px black; text-align:center; ><font color='red'>". $div . $row[ 'gain' ]. "</div>" . "</font></td>";
+		}
+		else {
+			
+			echo "<td border: solid 1px black; text-align:center; ><font color='black'>" . $div . $row[ 'gain' ]. "</div>" . "</font></td>";
+		}
+		*/
+		
+		echo "</tr>";
+	}
+	
+	echo "</table>";
+
+  }
+  else {
+
+  }
+  
+  $conn = null;
+?>
