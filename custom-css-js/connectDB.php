@@ -10,6 +10,6 @@
         
 	$conn->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
 
-	echo "<br>連線成功~";
+	// echo "<br>連線成功~";
 
 ?>
